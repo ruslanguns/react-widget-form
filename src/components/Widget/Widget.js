@@ -1,7 +1,9 @@
 import React from 'react'
-import ReactDOM from 'react-dom';
 import Config from '../../config';
-import './widget.css';
+import './Widget.scss';
+import { FormScreen } from './FormScreen';
+import { Provider } from 'react-redux';
+import { store } from '../../store/store';
 
 const widgetName = Config.name;
 
@@ -14,12 +16,9 @@ class Widget extends React.Component {
     }
 
     render() {
-        if (this.state.message) {
-            return <div className="widget-container"><h1>I'm a {widgetName}</h1><div>I have a message: {this.state.message}</div></div>;
-        }
-        else {
-            return <div className="widget-container"><h1>I'm a {widgetName}</h1></div>;
-        }
+      return <Provider store={ store }>
+              <FormScreen/>
+            </Provider>;
     }
 
     setMessage(message){

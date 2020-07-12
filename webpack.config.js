@@ -21,14 +21,52 @@ module.exports = (env) => {
                     use: ['babel-loader']
                 },
                 {
-                    test: /\.css$/i,
-                    use: ['style-loader', 'css-loader']
-                }
+                  test: /\.s[ac]ss$/i,
+                  use: [
+                    'style-loader',
+                    'css-loader',
+                    'sass-loader',
+                    
+                  ],
+                },
+                {
+                  test: /\.(css)$/ ,
+                  loader: 'css-loader',
+                  options: {
+                    modules: {
+                      localIdentName: "[name]__[local]___[hash:base64:5]",
+                    },
+                    // hashPrefix: 'rus',
+                    // modules: {
+                    //   mode: 'local',
+                    //   exportGlobals: true,
+                    //   context: path.resolve(__dirname, 'src'),
+                    // },
+                  },
+                },
+                {
+                  test: /\.(sass)$/ ,
+                  loader: 'sass-loader',
+                  options: {
+                    modules: {
+                      localIdentName: "[name]__[local]___[hash:base64:5]",
+                    },
+                    // hashPrefix: 'rus',
+                    // modules: {
+                    //   mode: 'local',
+                    //   exportGlobals: true,
+                    //   context: path.resolve(__dirname, 'src'),
+                    // },
+                  },
+                },
             ],
         },
         devServer: {
             contentBase: bundleOutputDir
         },
-        plugins: [new copyWebpackPlugin([{ from: 'demo/' }])]
+        plugins: [
+          new copyWebpackPlugin([{ from: 'demo/' }]),
+          
+        ]
     }];
 };
