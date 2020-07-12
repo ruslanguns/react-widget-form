@@ -1,25 +1,13 @@
 import React from 'react';
-import validator from 'validator';
-import Select from 'react-select';
-import { useForm } from '../../hooks/useForm';
-import { useDispatch, useSelector } from 'react-redux';
-import { setError } from '../../actions/ui';
+import { useForm } from 'react-hook-form';
+import { ReCaptcha, loadReCaptcha } from 'react-recaptcha-v3';
 
+const verifyCallback = token => {
+  console.log(token, 'verifycallback')
+}
 
 export const FormScreen = () => {
-
-  const dispatch = useDispatch();
-  const { loading, msgError } = useSelector(state => state.ui);
-  const [formValues, handleInputChange, reset] = useForm({
-    firstname: 'Ok',
-    company: '',
-    phone: '',
-    email: '',
-    subject: '',
-    message: '',
-    terms: true
-  });
-  const { firstname, company, phone, email, subject, message, terms } = formValues;
+  const emailRegx=/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   const subjectOptions = [
     { value: 'Obtener Licencia GRATIS', label: 'Obtener Licencia GRATIS' },
     { value: 'Comprar Plan — Demostración', label: 'Comprar Plan — Demostración' },
@@ -29,21 +17,14 @@ export const FormScreen = () => {
     { value: 'Información — WiFi Hoteles', label: 'Información — WiFi Hoteles' },
     { value: 'Información — Otros', label: 'Información — Otros' }
   ];
-
-  const handleOnSubmit = (e) => {
-    e.preventDefault();
-    
-    if (isFormValid) {
-      
-    }
+  const { register, handleSubmit, errors, formState } = useForm({ mode: 'onChange' });
+  const onSubmit = (data) => {
+    console.log(data);
+  }
+  const componentDidMount = () => {
+    loadReCaptcha('6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo')
   }
 
-  const isFormValid = () => {
-    if (firstname.trim().length === 0) {
-      dispatch( setError('El nombre es requerido.'));
-      return false;
-    }
-  }
 
   return (
     <div className="widget-container">
@@ -51,26 +32,27 @@ export const FormScreen = () => {
       <div className="container pt-4">
         <div className="row">
           <div className="col-12">
-            <form onSubmit={handleOnSubmit} noValidate>
+            <form onSubmit={handleSubmit(onSubmit)} autoComplete="off" noValidate>
               <div className="form-row">
 
                 <div className="col-sm-6 mb-3">
-                  <label htmlFor="firstname">Nombre</label>
+                  <label htmlFor="subject">Nombre</label>
                   <input
                     type="text"
                     id="firstname"
                     name="firstname"
-                    value={firstname}
-                    onChange={handleInputChange}
-                    className="form-control"
-                    autoComplete="off"
+                    ref={register({ required: true, minLength: 2 })}
+                    className={`form-control ${errors.firstname && 'is-invalid'} form-control-lg`}
                     />
-                  <div className="valid-feedback">
-                    Todo bien!
-                  </div>
-                  <div className="invalid-feedback">
-                    Debe introducir su nombre
-                  </div>
+                  {
+                    errors.firstname &&
+                    (<div className="invalid-feedback d-block">
+                      {
+                        errors.firstname.type === 'required' && 'Este campo es obligatorio' ||
+                        errors.firstname.type === 'minLength' && 'Debe introducir como mínimo dos caracteres'
+                      }
+                    </div>)
+                  }
                 </div>
 
                 <div className="col-sm-6 mb-3">
@@ -79,9 +61,8 @@ export const FormScreen = () => {
                     type="text"
                     id="company"
                     name="company"
-                    value={company}
-                    onChange={handleInputChange}
-                    className="form-control"
+                    ref={register({ required: false })}
+                    className="form-control form-control-lg"
                     autoComplete="off"/>
                 </div>
 
@@ -93,48 +74,67 @@ export const FormScreen = () => {
                   type="text"
                   id="phone"
                   name="phone"
-                  value={phone}
-                  onChange={handleInputChange}
-                  className="form-control"
-                  autoComplete="off" />
+                  ref={register({ required: true })}
+                  className={`form-control ${errors.phone && 'is-invalid'} form-control-lg`}
+                  />
+                {
+                  errors.phone &&
+                  (<div className="invalid-feedback d-block">
+                    {
+                      errors.phone.type === 'required' && 'Este campo es obligatorio'
+                    }
+                  </div>)
+                }
               </div>
 
               <div className="form-group">
                 <label htmlFor="email">Correo electrónico *</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={handleInputChange}
-                  className="form-control"
                   id="email"
+                  name="email"
+                  type="email"
+                  ref={register({ required: true, pattern: emailRegx })}
+                  className={`form-control ${errors.email && 'is-invalid'} form-control-lg`}
                   />
-                <div className="valid-feedback">
-                  Todo bien!
-                </div>
-                <div className="invalid-feedback">
-                  Debe ser un correo electrónico válido.
-                </div>
+              {
+                errors.email &&
+                (<div className="invalid-feedback d-block">
+                  {
+                    errors.email.type === 'required' && 'Este campo es obligatorio'
+                  }
+                </div>)
+              }
               </div>
 
               <div className="form-group">
 
-                <label htmlFor="subject" defaultValue={''}>Motivo de contacto *</label>
+                <label htmlFor="subject">Motivo de contacto *</label>
 
-                <Select
-                  id="subject"
+                <select
                   name="subject"
-                  value={subject}
-                  onChange={handleInputChange}
-                  isClearable="true"
-                  className=""
-                  options={subjectOptions} />
+                  id="subject"
+                  defaultValue={''}
+                  ref={register({ required: true })}
+                  className={`form-control ${errors.subject && 'is-invalid'} form-control-lg`}
+                  >
+                    
+                  <option value="" disabled>-- Seleccione una opción --</option> 
+                  {
+                    subjectOptions.map(({ value, label }) => (
+                      <option value={value} key={value}>{label}</option>
+                    ))
+                  }
 
-                <div className="valid-feedback">
-                  Todo bien!
-                </div>
-                <div className="invalid-feedback">
-                  Seleccione el asunto de su correo.
-                </div>
+                </select>
+
+                {
+                  errors.subject &&
+                  (<div className="invalid-feedback d-block">
+                    {
+                      errors.subject.type === 'required' && 'Este campo es obligatorio'
+                    }
+                  </div>)
+                }
               </div>
 
               <div className="form-group">
@@ -142,50 +142,57 @@ export const FormScreen = () => {
                 <textarea
                   id="message"
                   name="message"
-                  value={message}
-                  onChange={handleInputChange}
-                  className="form-control"
-                  name="message"
-                  rows="3"
-                  required></textarea>
-                <div className="valid-feedback">
-                  Todo bien!
-                </div>
-                <div className="invalid-feedback">
-                  Díganos, ¿en qué podemos ayudarle?
-                </div>
+                  ref={register({ required: true })}
+                  className={`form-control ${errors.message && 'is-invalid'} form-control-lg`}
+                  rows="3"/>
+                {
+                  errors.message &&
+                  (<div className="invalid-feedback d-block">
+                    {
+                      errors.message.type === 'required' && 'Este campo es obligatorio'
+                    }
+                  </div>)
+                }
               </div>
               
-              <div className="form-check">
+              <div className="custom-control form-control-lg custom-checkbox">
                 <input
+                  type="checkbox"
                   id="terms"
                   name="terms"
-                  onChange={handleInputChange}
-                  checked={terms}
-                  type="checkbox"
-                  className="form-check-input
-                  big-checkbox"
+                  ref={register({ required: true })}
+                  className={`${errors.terms && 'is-invalid'} custom-control-input`}
                   />
-                <label htmlFor="terms" className="form-check-label" htmlFor="terms">
+                <label htmlFor="terms" className="custom-control-label" htmlFor="terms">
                   Para continuar acepte nuestros <a href="#" onClick={e => e.preventDefault()}>Términos de servicios y políticas de privacidad.</a>
                 </label>
-                <div className="invalid-feedback">
-                  Debes aceptar los términos para poder continuar.
-                </div>
+                {
+                  errors.terms &&
+                  (<div className="invalid-feedback d-block">
+                    {
+                      errors.terms.type === 'required' && 'Este campo es obligatorio'
+                    }
+                  </div>)
+                }
               </div>
 
-              <div className="text-center mt-3">
-                <div className="col-12">
+              <div className="col-12 mt-4">  
+                <div className="text-center">
                   <button
                     type="submit"
                     id="sendContactButton"
-                    disabled={ loading}
-                    data-sitekey="reCAPTCHA_site_key"
+                    disabled={!formState.isValid}
+                    data-sitekey="6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo"
                     data-callback='onSubmit'
                     data-action='submit'
-                    className="btn btn-primary btn-lg">
+                    className="btn btn-primary btn-lg btn-block">
                     Enviar
-                </button>
+                  </button>
+                  <ReCaptcha
+                    sitekey='6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo'
+                    action='submit'
+                    verifyCallback={verifyCallback}
+                  />
                 </div>
               </div>
             </form>

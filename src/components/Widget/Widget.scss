@@ -4,5 +4,22 @@
     @import 'bootstrap/scss/bootstrap';
     
     font-family: Helvetica, sans-serif;
-  
+    font-size: 1.4em;
+
+    .custom-control-label::before, 
+    .custom-control-label::after {
+      // top: .8rem;
+      margin-right: 1em;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .invalid-feedback {
+      font-size: 0.6em;
+    }
+
+    #terms {
+      margin-bottom: 30px;
+    }
+
 }

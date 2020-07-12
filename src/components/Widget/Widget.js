@@ -8,7 +8,7 @@ import { store } from '../../store/store';
 const widgetName = Config.name;
 
 class Widget extends React.Component {
-    constructor(props) {
+  constructor(props) {
         super(props);
         this.state = {
             message: null,
