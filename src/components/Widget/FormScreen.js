@@ -1,10 +1,9 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { ReCaptcha, loadReCaptcha } from 'react-recaptcha-v3';
+import { useForm, Controller } from 'react-hook-form';
+import { GoogleReCaptcha } from 'react-google-recaptcha-v3';
+import PhoneInput from 'react-phone-input-2'
+import es from 'react-phone-input-2/lang/es.json'
 
-const verifyCallback = token => {
-  console.log(token, 'verifycallback')
-}
 
 export const FormScreen = () => {
   const emailRegx=/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -17,15 +16,11 @@ export const FormScreen = () => {
     { value: 'Información — WiFi Hoteles', label: 'Información — WiFi Hoteles' },
     { value: 'Información — Otros', label: 'Información — Otros' }
   ];
-  const { register, handleSubmit, errors, formState } = useForm({ mode: 'onChange' });
+  const { register, handleSubmit, errors, formState, control } = useForm({ mode: 'onChange' });
+
   const onSubmit = (data) => {
     console.log(data);
   }
-  const componentDidMount = () => {
-    loadReCaptcha('6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo')
-  }
-
-
   return (
     <div className="widget-container">
 
@@ -70,13 +65,29 @@ export const FormScreen = () => {
 
               <div className="form-group">
                 <label htmlFor="phone">Teléfono</label>
-                <input
-                  type="text"
-                  id="phone"
+                <Controller
+                  as={
+                    <PhoneInput
+                      id="phone"
+                      localization={es}
+                      country={'es'}
+                      inputClass={`${errors.phone && 'is-invalid' || ''} form-control-lg`}
+                      // inputStyle={{
+                      //   width: '100%',
+                      //   height: '50px',
+                      //   fontSize: '1.4em'
+                      // }}
+                      // dropdownStyle={{
+                      //   width: '300px',
+                      //   fontSize: '1.2em'
+                      // }}
+                      inputRef={register}
+                    />
+                  }
                   name="phone"
-                  ref={register({ required: true })}
-                  className={`form-control ${errors.phone && 'is-invalid'} form-control-lg`}
-                  />
+                  control={control}
+                  rules= {{required: true, minLength: 10}}
+                />
                 {
                   errors.phone &&
                   (<div className="invalid-feedback d-block">
@@ -95,12 +106,15 @@ export const FormScreen = () => {
                   type="email"
                   ref={register({ required: true, pattern: emailRegx })}
                   className={`form-control ${errors.email && 'is-invalid'} form-control-lg`}
+                  autoComplete="nope"
                   />
+                
               {
                 errors.email &&
                 (<div className="invalid-feedback d-block">
                   {
-                    errors.email.type === 'required' && 'Este campo es obligatorio'
+                    errors.email.type === 'required' && 'Este campo es obligatorio' ||
+                    errors.email.type === 'pattern' && 'Debe ser un correo válido'
                   }
                 </div>)
               }
@@ -181,18 +195,14 @@ export const FormScreen = () => {
                   <button
                     type="submit"
                     id="sendContactButton"
-                    disabled={!formState.isValid}
+                    // disabled={!formState.isValid}
                     data-sitekey="6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo"
                     data-callback='onSubmit'
                     data-action='submit'
                     className="btn btn-primary btn-lg btn-block">
                     Enviar
                   </button>
-                  <ReCaptcha
-                    sitekey='6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo'
-                    action='submit'
-                    verifyCallback={verifyCallback}
-                  />
+                  <GoogleReCaptcha  action="submit" onVerify={token => null} />
                 </div>
               </div>
             </form>

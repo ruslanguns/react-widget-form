@@ -4,6 +4,8 @@ import './Widget.scss';
 import { FormScreen } from './FormScreen';
 import { Provider } from 'react-redux';
 import { store } from '../../store/store';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
+
 
 const widgetName = Config.name;
 
@@ -17,7 +19,11 @@ class Widget extends React.Component {
 
     render() {
       return <Provider store={ store }>
-              <FormScreen/>
+              <GoogleReCaptchaProvider
+                useRecaptchaNet
+                reCaptchaKey="6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo">
+                <FormScreen/>
+              </GoogleReCaptchaProvider>
             </Provider>;
     }
 
