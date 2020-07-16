@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 var copyWebpackPlugin = require('copy-webpack-plugin');
 const bundleOutputDir = './dist';
 
@@ -41,8 +40,7 @@ module.exports = (env) => {
             contentBase: bundleOutputDir
         },
         plugins: [
-          new copyWebpackPlugin([{ from: 'demo/' }]),
-          
+          new copyWebpackPlugin([{ from: 'demo/' }])
         ]
     }];
 };

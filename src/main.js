@@ -70,12 +70,13 @@ function apiHandler(api, params) {
     switch (api) {
         case 'init':
             config = Object.assign({}, config, params);
+            // console.log(config, params);
             window[widgetConfigName] = config;
 
             // get a reference to the created widget component so we can
             // call methods as needed
             widgetComponent = React.createRef();
-            ReactDOM.render(<Widget ref={widgetComponent} />, document.getElementById(config.targetElementId));
+            ReactDOM.render(<Widget config={config} ref={widgetComponent} />, document.getElementById(config.targetElementId));
             break;
         case 'message':
             // Send the message to the current widget instance

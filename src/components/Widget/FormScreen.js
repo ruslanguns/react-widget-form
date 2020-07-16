@@ -1,215 +1,287 @@
-import React from 'react';
+import React, { useState } from 'react';
+import './alertStyle.scss';
 import { useForm, Controller } from 'react-hook-form';
 import { GoogleReCaptcha } from 'react-google-recaptcha-v3';
-import PhoneInput from 'react-phone-input-2'
 import es from 'react-phone-input-2/lang/es.json'
+import PhoneInput from 'react-phone-input-2'
+import { useSelector, useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
+import { subscribeLead } from '../../helpers/subscribeLead';
+import { EMAIL_REGEX } from '../../constants';
+import { loadingData } from '../../helpers/loadingData';
+import { loadingDataFinish } from '../../helpers/loadingDataFinish';
+import { startLoading, finishLoading, setError, removeError } from '../../actions/ui';
 
-export const FormScreen = () => {
-  const emailRegx=/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  const subjectOptions = [
-    { value: 'Obtener Licencia GRATIS', label: 'Obtener Licencia GRATIS' },
-    { value: 'Comprar Plan — Demostración', label: 'Comprar Plan — Demostración' },
-    { value: 'Comprar Plan — Distribuidor', label: 'Comprar Plan — Distribuidor' },
-    { value: 'Comprar Plan — Local', label: 'Comprar Plan — Local' },
-    { value: 'Información — Instalación de Wifi', label: 'Información — Instalación de Wifi' },
-    { value: 'Información — WiFi Hoteles', label: 'Información — WiFi Hoteles' },
-    { value: 'Información — Otros', label: 'Información — Otros' }
-  ];
-  const { register, handleSubmit, errors, formState, control } = useForm({ mode: 'onChange' });
+const FormScreen = ({ config }) => {
+  const dispatch = useDispatch();
+  const { listUid, replyTo, reCaptchaKey, selectOptions } = config;
+  const { loading, msgError } = useSelector(state => state.ui);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const { register, handleSubmit, errors, control, reset, setValue } = useForm({mode: 'onChange'});
+  
+  const onSubmit = async data => {
+    loadingData('Enviando', 'Espera mientras enviamos el formulario');
+    dispatch(startLoading());
 
-  const onSubmit = (data) => {
-    console.log(data);
+    return await subscribeLead(data, listUid, replyTo)
+      .then(() => {
+        dispatch(finishLoading());
+        setFormSubmitted(true);
+        loadingDataFinish();
+        reset();
+        setValue('phone', '34', { shouldDirty: false, shouldValidate: false });
+      })
+      .catch(err => {
+        loadingDataFinish();
+        dispatch(finishLoading());
+        if (err.response) {
+          return dispatch(setError(err.response.data));
+        } else {
+          return dispatch(setError({ message: 'Ha surgido un problema, intente más tarde por favor.'}))
+        }
+      });
   }
+
+  const handleHideAlert = () => {
+    dispatch(removeError());
+    setFormSubmitted(false);
+  }
+
   return (
-    <div className="widget-container">
+    <>
+      <div className="bootstrap">
 
-      <div className="container pt-4">
-        <div className="row">
-          <div className="col-12">
-            <form onSubmit={handleSubmit(onSubmit)} autoComplete="off" noValidate>
-              <div className="form-row">
+        <div className="container pt-4">
+          <div className="row">
+            <div className="col-12">
+              
+              {
+                msgError && (
 
-                <div className="col-sm-6 mb-3">
-                  <label htmlFor="subject">Nombre</label>
-                  <input
-                    type="text"
-                    id="firstname"
-                    name="firstname"
-                    ref={register({ required: true, minLength: 2 })}
-                    className={`form-control ${errors.firstname && 'is-invalid'} form-control-lg`}
+                  <div className="rus-alert-container">
+                    <div className="rus-alert-danger">
+                      <div>
+                        <strong>{ msgError?.message[0] }</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleHideAlert}
+                        className="close">
+                        <span>&times;</span>
+                      </button>
+                    </div>
+                  </div>
+                )
+              }
+              {
+                formSubmitted && (
+
+                  <div className="rus-alert-container">
+                    <div className="rus-alert-success">
+                      <div>
+                        <strong>Te hemos enviado un correo para verificar</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleHideAlert}
+                        className="close">
+                        <span>&times;</span>
+                      </button>
+                    </div>
+                  </div>
+                )
+              }
+              
+              <form onSubmit={handleSubmit(onSubmit)} autoComplete="off" noValidate>
+                <div className="form-row">
+
+                  <div className="col-sm-6 mb-3">
+                    <label htmlFor="subject">Nombre *</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      autoComplete="nope"
+                      ref={register({ required: true, minLength: 2 })}
+                      className={`form-control ${errors.firstname && 'is-invalid'} form-control-lg`}
                     />
+                    {
+                      errors.firstname &&
+                      (<div className="invalid-feedback d-block">
+                        {
+                          errors.firstname.type === 'required' && 'Este campo es obligatorio' ||
+                          errors.firstname.type === 'minLength' && 'Debe introducir como mínimo dos caracteres'
+                        }
+                      </div>)
+                    }
+                  </div>
+
+                  <div className="col-sm-6 mb-3">
+                    <label htmlFor="company">Empresa</label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      ref={register({ required: false })}
+                      className="form-control form-control-lg"
+                      autoComplete="off" />
+                  </div>
+
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="phone">Teléfono *</label>
+                  <Controller
+                    as={
+                      <PhoneInput
+                        id="phone"
+                        localization={es}
+                        country={'es'}
+                        inputClass={`${errors.phone && 'is-invalid' || ''} form-control-lg`}
+                        inputRef={register}
+                      />
+                    }
+                    name="phone"
+                    control={control}
+                    rules={{ required: true, minLength: 10 }}
+                  />
                   {
-                    errors.firstname &&
+                    errors.phone &&
                     (<div className="invalid-feedback d-block">
                       {
-                        errors.firstname.type === 'required' && 'Este campo es obligatorio' ||
-                        errors.firstname.type === 'minLength' && 'Debe introducir como mínimo dos caracteres'
+                        errors.phone.type === 'required' && 'Este campo es obligatorio'
                       }
                     </div>)
                   }
                 </div>
 
-                <div className="col-sm-6 mb-3">
-                  <label htmlFor="company">Empresa</label>
+                <div className="form-group">
+                  <label htmlFor="email">Correo electrónico *</label>
                   <input
-                    type="text"
-                    id="company"
-                    name="company"
-                    ref={register({ required: false })}
-                    className="form-control form-control-lg"
-                    autoComplete="off"/>
+                    id="email"
+                    name="email"
+                    type="email"
+                    ref={register({ required: true, pattern: EMAIL_REGEX })}
+                    className={`form-control ${errors.email && 'is-invalid'} form-control-lg`}
+                    autoComplete="nope"
+                  />
+
+                  {
+                    errors.email &&
+                    (<div className="invalid-feedback d-block">
+                      {
+                        errors.email.type === 'required' && 'Este campo es obligatorio' ||
+                        errors.email.type === 'pattern' && 'Debe ser un correo válido'
+                      }
+                    </div>)
+                  }
                 </div>
 
-              </div>
+                <div className="form-group">
 
-              <div className="form-group">
-                <label htmlFor="phone">Teléfono</label>
-                <Controller
-                  as={
-                    <PhoneInput
-                      id="phone"
-                      localization={es}
-                      country={'es'}
-                      inputClass={`${errors.phone && 'is-invalid' || ''} form-control-lg`}
-                      // inputStyle={{
-                      //   width: '100%',
-                      //   height: '50px',
-                      //   fontSize: '1.4em'
-                      // }}
-                      // dropdownStyle={{
-                      //   width: '300px',
-                      //   fontSize: '1.2em'
-                      // }}
-                      inputRef={register}
-                    />
-                  }
-                  name="phone"
-                  control={control}
-                  rules= {{required: true, minLength: 10}}
-                />
-                {
-                  errors.phone &&
-                  (<div className="invalid-feedback d-block">
-                    {
-                      errors.phone.type === 'required' && 'Este campo es obligatorio'
-                    }
-                  </div>)
-                }
-              </div>
+                  <label htmlFor="subject">Motivo de contacto *</label>
 
-              <div className="form-group">
-                <label htmlFor="email">Correo electrónico *</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  ref={register({ required: true, pattern: emailRegx })}
-                  className={`form-control ${errors.email && 'is-invalid'} form-control-lg`}
-                  autoComplete="nope"
-                  />
-                
-              {
-                errors.email &&
-                (<div className="invalid-feedback d-block">
-                  {
-                    errors.email.type === 'required' && 'Este campo es obligatorio' ||
-                    errors.email.type === 'pattern' && 'Debe ser un correo válido'
-                  }
-                </div>)
-              }
-              </div>
-
-              <div className="form-group">
-
-                <label htmlFor="subject">Motivo de contacto *</label>
-
-                <select
-                  name="subject"
-                  id="subject"
-                  defaultValue={''}
-                  ref={register({ required: true })}
-                  className={`form-control ${errors.subject && 'is-invalid'} form-control-lg`}
+                  <select
+                    name="subject"
+                    id="subject"
+                    defaultValue={''}
+                    ref={register({ required: true })}
+                    className={`form-control ${errors.subject && 'is-invalid'} form-control-lg`}
                   >
-                    
-                  <option value="" disabled>-- Seleccione una opción --</option> 
+
+                    <option value="" disabled>-- Seleccione una opción --</option>
+                    {
+                      selectOptions.map(({ value, label }) => (
+                        <option value={value} key={value}>{label}</option>
+                      ))
+                    }
+
+                  </select>
+
                   {
-                    subjectOptions.map(({ value, label }) => (
-                      <option value={value} key={value}>{label}</option>
-                    ))
+                    errors.subject &&
+                    (<div className="invalid-feedback d-block">
+                      {
+                        errors.subject.type === 'required' && 'Este campo es obligatorio'
+                      }
+                    </div>)
                   }
-
-                </select>
-
-                {
-                  errors.subject &&
-                  (<div className="invalid-feedback d-block">
-                    {
-                      errors.subject.type === 'required' && 'Este campo es obligatorio'
-                    }
-                  </div>)
-                }
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Mensaje</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  ref={register({ required: true })}
-                  className={`form-control ${errors.message && 'is-invalid'} form-control-lg`}
-                  rows="3"/>
-                {
-                  errors.message &&
-                  (<div className="invalid-feedback d-block">
-                    {
-                      errors.message.type === 'required' && 'Este campo es obligatorio'
-                    }
-                  </div>)
-                }
-              </div>
-              
-              <div className="custom-control form-control-lg custom-checkbox">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  name="terms"
-                  ref={register({ required: true })}
-                  className={`${errors.terms && 'is-invalid'} custom-control-input`}
-                  />
-                <label htmlFor="terms" className="custom-control-label" htmlFor="terms">
-                  Para continuar acepte nuestros <a href="#" onClick={e => e.preventDefault()}>Términos de servicios y políticas de privacidad.</a>
-                </label>
-                {
-                  errors.terms &&
-                  (<div className="invalid-feedback d-block">
-                    {
-                      errors.terms.type === 'required' && 'Este campo es obligatorio'
-                    }
-                  </div>)
-                }
-              </div>
-
-              <div className="col-12 mt-4">  
-                <div className="text-center">
-                  <button
-                    type="submit"
-                    id="sendContactButton"
-                    // disabled={!formState.isValid}
-                    data-sitekey="6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo"
-                    data-callback='onSubmit'
-                    data-action='submit'
-                    className="btn btn-primary btn-lg btn-block">
-                    Enviar
-                  </button>
-                  <GoogleReCaptcha  action="submit" onVerify={token => null} />
                 </div>
-              </div>
-            </form>
+
+                <div className="form-group">
+                  <label htmlFor="message">Mensaje</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    ref={register({ required: true })}
+                    className={`form-control ${errors.message && 'is-invalid'} form-control-lg`}
+                    rows="3" />
+                  {
+                    errors.message &&
+                    (<div className="invalid-feedback d-block">
+                      {
+                        errors.message.type === 'required' && 'Este campo es obligatorio'
+                      }
+                    </div>)
+                  }
+                </div>
+
+                <div className="custom-control form-control-lg custom-checkbox">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="terms"
+                    ref={register({ required: true })}
+                    className={`${errors.terms && 'is-invalid'} custom-control-input`}
+                  />
+                  <label htmlFor="terms" className="custom-control-label" htmlFor="terms">
+                    &nbsp; Para continuar acepte nuestros <a href="#" onClick={e => e.preventDefault()}>Términos de servicios y políticas de privacidad.</a>
+                  </label>
+                  {
+                    errors.terms &&
+                    (<div className="invalid-feedback d-block">
+                      {
+                        errors.terms.type === 'required' && 'Este campo es obligatorio'
+                      }
+                    </div>)
+                  }
+                </div>
+
+                <div className="col-12" style={{ marginTop: '20px' }}>
+                  <div className="text-center">
+                    <button
+                      type="submit"
+                      id="sendContactButton"
+                      disabled={loading}
+                      data-sitekey={reCaptchaKey}
+                      data-callback='onSubmit'
+                      data-action='submit'
+                      className="btn btn-primary btn-lg btn-block">
+                      Enviar
+                    </button>
+                    <GoogleReCaptcha action="submit" onVerify={token => null} />
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
 
-    </div>
+      </div>
+    </>
   );
 }
+FormScreen.propTypes = {
+  config: PropTypes.shape({
+    listUid: PropTypes.string.isRequired,
+    replyTo: PropTypes.string.isRequired,
+    reCaptchaKey: PropTypes.string.isRequired,
+    selectOptions: PropTypes.arrayOf(PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+    })).isRequired
+  })
+}
+
+export default FormScreen;

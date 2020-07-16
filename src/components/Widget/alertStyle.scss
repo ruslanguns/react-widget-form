@@ -1,0 +1,59 @@
+.rus-alert-container {
+  display: absolute;
+  font-weight: 400;
+  font-size: 0.8em;
+  width: 100%;
+  margin-bottom: 10px;
+  height: 55px;
+  color: white;
+  border: medium none;
+  
+  .rus-alert-danger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    border-radius: 5px;
+    background-color: rgb(255, 107, 107) !important;
+  }
+
+  .rus-alert-success {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    border-radius: 5px;
+    background-color: rgb(120, 182, 92) !important;
+  }
+
+  .close {
+    color: inherit;
+    font-size: 1.5em;
+  }
+
+  button {
+    background-color: inherit;
+    border: medium none;
+    border-color: white;
+    font-size: 20px;
+    position: absolute;
+    right: 25px;
+    top: auto;
+    color: white;
+
+    &:hover {
+      color: white;
+      font-weight: 500;
+    }
+  }
+
+  a {
+    color: white;
+    font-weight: 600;
+
+    &:hover {
+      color: white;
+      text-decoration: underline;
+    }
+  }
+}

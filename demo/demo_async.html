@@ -10,11 +10,27 @@
     <div id="root">Loading...</div>
     <script>
         (function (w, d, s, o, f, js, fjs) {
-            w['Simple-Widget'] = o; w[o] = w[o] || function () { (w[o].q = w[o].q || []).push(arguments) };
-            js = d.createElement(s), fjs = d.getElementsByTagName(s)[0];
-            js.id = o; js.src = f; js.async = 1; fjs.parentNode.insertBefore(js, fjs);
+          w['Wificlick-Form'] = o; w[o] = w[o] || function () { (w[o].q = w[o].q || []).push(arguments) };
+          js = d.createElement(s), fjs = d.getElementsByTagName(s)[0];
+          js.id = o; js.src = f; js.async = 1; fjs.parentNode.insertBefore(js, fjs);
         }(window, document, 'script', 'w1', './widget.js'));
-        w1('init', { targetElementId: 'root' });
+        
+        const config = {
+          listUid: '5f09f57c020ee',
+          reCaptchaKey: '6LeLZ7AZAAAAAB5tTLi-L5I5atxIZa6W6r0JwjSo',
+          replyTo: 'ventas@wificlick.es',
+          selectOptions: [
+            { value: 'Obtener Licencia GRATIS', label: 'Obtener Licencia GRATIS' },
+            { value: 'Comprar Plan — Demostración', label: 'Comprar Plan — Demostración' },
+            { value: 'Comprar Plan — Distribuidor', label: 'Comprar Plan — Distribuidor' },
+            { value: 'Comprar Plan — Local', label: 'Comprar Plan — Local' },
+            { value: 'Información — Instalación de Wifi', label: 'Información — Instalación de Wifi' },
+            { value: 'Información — WiFi Hoteles', label: 'Información — WiFi Hoteles' },
+            { value: 'Información — Otros', label: 'Información — Otros' }
+          ]
+        }
+
+        w1('init', { targetElementId: 'root', ...config });
 
     </script>
 

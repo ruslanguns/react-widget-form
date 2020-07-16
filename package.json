@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.6.2",
+    "@babel/plugin-transform-runtime": "^7.10.5",
     "@babel/preset-env": "^7.6.2",
     "@babel/preset-react": "^7.0.0",
     "autoprefixer": "^9.8.5",
@@ -28,9 +29,11 @@
     "webpack-dev-server": "^3.8.2"
   },
   "dependencies": {
+    "@babel/runtime": "^7.10.5",
+    "@sweetalert2/theme-borderless": "^3.2.0",
+    "axios": "^0.19.2",
     "bootstrap": "^4.5.0",
     "css-loader": "^3.6.0",
-    "postcss-loader": "^3.0.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-google-recaptcha-v3": "^1.5.2",
@@ -40,13 +43,17 @@
     "react-select": "^3.1.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "sweetalert2": "^9.15.3",
+    "sweetalert2": "^9.17.0",
+    "sweetalert2-react-content": "^3.0.3",
     "validator": "^13.1.1"
   },
   "babel": {
     "presets": [
       "@babel/preset-env",
       "@babel/preset-react"
+    ],
+    "plugins": [
+      "@babel/plugin-transform-runtime"
     ]
   },
   "jest": {
