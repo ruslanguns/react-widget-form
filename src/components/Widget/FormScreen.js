@@ -62,7 +62,7 @@ const FormScreen = ({ config }) => {
                   <div className="rus-alert-container">
                     <div className="rus-alert-danger">
                       <div>
-                        <strong>{ msgError?.message[0] }</strong>
+                        <strong>{ msgError?.message }</strong>
                       </div>
                       <button
                         type="button"
@@ -80,7 +80,7 @@ const FormScreen = ({ config }) => {
                   <div className="rus-alert-container">
                     <div className="rus-alert-success">
                       <div>
-                        <strong>Te hemos enviado un correo para verificar</strong>
+                        <strong>El formulario se ha enviado correctamente.</strong>
                       </div>
                       <button
                         type="button"
@@ -236,7 +236,7 @@ const FormScreen = ({ config }) => {
                     className={`${errors.terms && 'is-invalid'} custom-control-input`}
                   />
                   <label htmlFor="terms" className="custom-control-label" htmlFor="terms">
-                    &nbsp; Para continuar acepte nuestros <a href="#" onClick={e => e.preventDefault()}>Términos de servicios y políticas de privacidad.</a>
+                    &nbsp; Para continuar acepte nuestros <a href={config?.termsUrl || '#'} target="_blank">Términos de servicios y políticas de privacidad.</a>
                   </label>
                   {
                     errors.terms &&

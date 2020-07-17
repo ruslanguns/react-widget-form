@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const subscribeLead = (data, listUid, replyTo) => {
-  const url = `http://localhost:4001/api/subscribe/${listUid}`;
+  const url = `https://contact-api.iclick.tk/api/subscribe`;
   const params = {
     listUid,
     replyTo
